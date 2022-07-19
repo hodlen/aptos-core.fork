@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: tgymnich/fork-sync@v1.4
         with:
+          token: ${{ secrets.ACTION_TOKEN }}
           owner: aptos-labs
           base: main
           head: main
