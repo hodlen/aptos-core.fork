@@ -4,8 +4,6 @@
 name: "Release Nightly CLI"
 
 on:
-  schedule:
-    - cron: "0 1 * * *" # every day
   workflow_dispatch:
 
 jobs:
