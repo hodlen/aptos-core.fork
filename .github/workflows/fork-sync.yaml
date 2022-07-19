@@ -12,6 +12,6 @@ jobs:
     steps:
       - uses: tgymnich/fork-sync@v1.4
         with:
-          owner: hodlen
+          owner: aptos-labs
           base: main
           head: main
