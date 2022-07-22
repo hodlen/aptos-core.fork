@@ -1,0 +1,58 @@
+# This defines a workflow to build and release a new version of the aptos CLI.
+# In order to trigger it go to the Actions Tab of the Repo, click "Release CLI" and then "Run Workflow".
+
+name: "Release Nightly CLI"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux-binary:
+    name: "Build Linux binary"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build CLI
+        run: scripts/cli/build_cli_nightly.sh
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: cli-builds
+          path: aptos-cli-*.zip
+
+  build-os-x-binary:
+    name: "Build OS X binary"
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build CLI
+        run: scripts/cli/build_cli_nightly.sh
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: cli-builds
+          path: aptos-cli-*.zip
+
+  release-binaries:
+    name: "Release binaries"
+    needs:
+      - build-linux-binary
+      - build-os-x-binary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "write"
+      pull-requests: "read"
+    steps:
+      - name: Download prebuilt binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: cli-builds
+      - name: Create GitHub Release
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "aptos-cli-nightly"
+          prerelease: false
+          title: "Aptos CLI Nightly Build"
+          files: |
+            aptos-cli-*.zip
