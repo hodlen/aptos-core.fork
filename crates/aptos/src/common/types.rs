@@ -19,6 +19,9 @@ use aptos_crypto::{
     x25519, PrivateKey, ValidCryptoMaterial, ValidCryptoMaterialStringExt,
 };
 use aptos_keygen::KeyGen;
+use aptos_rest_client::aptos_api_types::{
+    DeleteModule, DeleteResource, DeleteTableItem, WriteModule, WriteResource, WriteTableItem,
+};
 use aptos_rest_client::{aptos_api_types::WriteSetChange, Client, Transaction};
 use aptos_sdk::{
     move_types::{
@@ -75,6 +78,8 @@ pub enum CliError {
     MoveCompilationError(String),
     #[error("Move unit tests failed")]
     MoveTestError,
+    #[error("Move Prover failed")]
+    MoveProverError,
     #[error("Unable to parse '{0}': error: {1}")]
     UnableToParse(&'static str, String),
     #[error("Unable to read file '{0}', error: {1}")]
@@ -95,6 +100,7 @@ impl CliError {
             CliError::IO(_, _) => "IO",
             CliError::MoveCompilationError(_) => "MoveCompilationError",
             CliError::MoveTestError => "MoveTestError",
+            CliError::MoveProverError => "MoveProverError",
             CliError::UnableToParse(_, _) => "UnableToParse",
             CliError::UnableToReadFile(_, _) => "UnableToReadFile",
             CliError::UnexpectedError(_) => "UnexpectedError",
@@ -370,12 +376,12 @@ impl EncodingType {
         match self {
             EncodingType::BCS => bcs::from_bytes(&data).map_err(|err| CliError::BCS(name, err)),
             EncodingType::Hex => {
-                let hex_string = String::from_utf8(data).unwrap();
+                let hex_string = String::from_utf8(data)?;
                 Key::from_encoded_string(hex_string.trim())
                     .map_err(|err| CliError::UnableToParse(name, err.to_string()))
             }
             EncodingType::Base64 => {
-                let string = String::from_utf8(data).unwrap();
+                let string = String::from_utf8(data)?;
                 let bytes = base64::decode(string.trim())
                     .map_err(|err| CliError::UnableToParse(name, err.to_string()))?;
                 Key::try_from(bytes.as_slice()).map_err(|err| {
@@ -790,40 +796,44 @@ impl From<Transaction> for TransactionSummary {
                 .changes
                 .iter()
                 .map(|change| match change {
-                    WriteSetChange::DeleteModule { module, .. } => ChangeSummary {
+                    WriteSetChange::DeleteModule(DeleteModule { module, .. }) => ChangeSummary {
                         event: change.type_str(),
                         module: Some(module.to_string()),
                         ..Default::default()
                     },
-                    WriteSetChange::DeleteResource {
+                    WriteSetChange::DeleteResource(DeleteResource {
                         address, resource, ..
-                    } => ChangeSummary {
+                    }) => ChangeSummary {
                         event: change.type_str(),
                         address: Some(*address.inner()),
                         resource: Some(resource.to_string()),
                         ..Default::default()
                     },
-                    WriteSetChange::DeleteTableItem { handle, key, .. } => ChangeSummary {
-                        event: change.type_str(),
-                        handle: Some(handle.to_string()),
-                        key: Some(key.to_string()),
-                        ..Default::default()
-                    },
-                    WriteSetChange::WriteModule { address, .. } => ChangeSummary {
-                        event: change.type_str(),
-                        address: Some(*address.inner()),
-                        ..Default::default()
-                    },
-                    WriteSetChange::WriteResource { address, data, .. } => ChangeSummary {
+                    WriteSetChange::DeleteTableItem(DeleteTableItem { handle, key, .. }) => {
+                        ChangeSummary {
+                            event: change.type_str(),
+                            handle: Some(handle.to_string()),
+                            key: Some(key.to_string()),
+                            ..Default::default()
+                        }
+                    }
+                    WriteSetChange::WriteModule(WriteModule { address, .. }) => ChangeSummary {
                         event: change.type_str(),
                         address: Some(*address.inner()),
-                        resource: Some(data.typ.to_string()),
-                        data: Some(serde_json::to_value(&data.data).unwrap_or_default()),
                         ..Default::default()
                     },
-                    WriteSetChange::WriteTableItem {
+                    WriteSetChange::WriteResource(WriteResource { address, data, .. }) => {
+                        ChangeSummary {
+                            event: change.type_str(),
+                            address: Some(*address.inner()),
+                            resource: Some(data.typ.to_string()),
+                            data: Some(serde_json::to_value(&data.data).unwrap_or_default()),
+                            ..Default::default()
+                        }
+                    }
+                    WriteSetChange::WriteTableItem(WriteTableItem {
                         handle, key, value, ..
-                    } => ChangeSummary {
+                    }) => ChangeSummary {
                         event: change.type_str(),
                         handle: Some(handle.to_string()),
                         key: Some(key.to_string()),
