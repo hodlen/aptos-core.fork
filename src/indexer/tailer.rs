@@ -16,26 +16,26 @@ use std::{fmt::Debug, sync::Arc};
 use tokio::{sync::Mutex, task::JoinHandle};
 use url::{ParseError, Url};
 
-use super::metadata::IndexerMetaHandle;
+use super::metadata::TailerMetaHandle;
 
 #[derive(Clone)]
 pub struct Tailer {
     pub transaction_fetcher: Arc<Mutex<dyn TransactionFetcherTrait>>,
     processors: Vec<Arc<dyn TransactionProcessor>>,
-    metadata_processor: Arc<Mutex<dyn IndexerMetaHandle>>,
+    indexer_metadata: Arc<Mutex<dyn TailerMetaHandle>>,
 }
 
 impl Tailer {
     pub fn new(
         node_url: &str,
-        metadata_processor: Arc<Mutex<dyn IndexerMetaHandle>>,
+        indexer_metadata: Arc<Mutex<dyn TailerMetaHandle>>,
     ) -> Result<Tailer, ParseError> {
         let url = Url::parse(node_url)?;
         let transaction_fetcher = TransactionFetcher::new(url, None);
         Ok(Self {
             transaction_fetcher: Arc::new(Mutex::new(transaction_fetcher)),
             processors: vec![],
-            metadata_processor,
+            indexer_metadata,
         })
     }
 
@@ -43,7 +43,7 @@ impl Tailer {
     pub async fn check_or_update_chain_id(&self) -> anyhow::Result<()> {
         info!("Checking if chain id is correct");
         let maybe_existing_chain_id: Option<i64> = self
-            .metadata_processor
+            .indexer_metadata
             .lock()
             .await
             .get_ledger_info()
@@ -66,7 +66,7 @@ impl Tailer {
             }
             None => {
                 info!("Adding chain id {} to db, continue indexing", new_chain_id);
-                self.metadata_processor
+                self.indexer_metadata
                     .lock()
                     .await
                     .set_ledger_info(LedgerInfo {

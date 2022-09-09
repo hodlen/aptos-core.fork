@@ -27,7 +27,6 @@ use crate::{
 };
 use aptos_rest_client::Transaction;
 use async_trait::async_trait;
-use diesel::{Connection, ExpressionMethods, QueryDsl, RunQueryDsl};
 use field_count::FieldCount;
 use std::fmt::Debug;
 
@@ -315,9 +314,5 @@ impl TransactionProcessor for TokenTransactionProcessor {
                 self.name(),
             ))),
         }
-    }
-
-    fn connection_pool(&self) -> &PgDbPool {
-        &self.connection_pool
     }
 }

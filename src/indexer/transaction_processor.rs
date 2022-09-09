@@ -1,32 +1,27 @@
 // Copyright (c) Aptos
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::database::get_chunks;
-use crate::util::bigdecimal_to_u64;
 use crate::{
-    counters::{
-        GOT_CONNECTION, PROCESSOR_ERRORS, PROCESSOR_INVOCATIONS, PROCESSOR_SUCCESSES,
-        UNABLE_TO_GET_CONNECTION,
-    },
-    database::{execute_with_better_error, PgDbPool, PgPoolConnection},
+    counters::{PROCESSOR_ERRORS, PROCESSOR_INVOCATIONS, PROCESSOR_SUCCESSES},
     indexer::{errors::TransactionProcessingError, processing_result::ProcessingResult},
     models::processor_statuses::ProcessorStatusModel,
-    schema,
 };
 use aptos_rest_client::Transaction;
 use async_trait::async_trait;
-use diesel::pg::upsert::excluded;
-use diesel::{prelude::*, RunQueryDsl};
-use field_count::FieldCount;
-use schema::processor_statuses::{self, dsl};
 use std::fmt::Debug;
 
-/// The `TransactionProcessor` is used by an instance of a `Tailer` to process transactions
 #[async_trait]
-pub trait TransactionProcessor: Send + Sync + Debug {
-    /// name of the processor, for status logging
-    /// This will get stored in the database for each (`TransactionProcessor`, transaction_version) pair
-    fn name(&self) -> &'static str;
+pub trait ProcessorDataBaseHandle: Send + Sync {
+    // Update `ProcessorStatusModel` changeset in the database
+    fn apply_processor_status(&self, psms: &[ProcessorStatusModel]);
+
+    /// Gets all versions which were not successfully processed for this `TransactionProcessor` from the DB
+    /// This is so the `Tailer` can know which versions to retry
+    fn get_error_versions(&self, processor_name: &str) -> Vec<u64>;
+
+    /// Gets the highest version for this `TransactionProcessor` from the DB
+    /// This is so we know where to resume from on restarts
+    fn get_max_version(&self, processor_name: &str) -> Option<u64>;
 
     /// Process all transactions within a block and processes it. This method will be called from `process_transaction_with_status`
     /// In case a transaction cannot be processed, we will fail the entire block.
@@ -36,35 +31,18 @@ pub trait TransactionProcessor: Send + Sync + Debug {
         start_version: u64,
         end_version: u64,
     ) -> Result<ProcessingResult, TransactionProcessingError>;
+}
 
-    /// Gets a reference to the connection pool
-    /// This is used by the `get_conn()` helper below
-    fn connection_pool(&self) -> &PgDbPool;
+/// The `TransactionProcessor` is used by an instance of a `Tailer` to process transactions
+#[async_trait]
+pub trait TransactionProcessor: Send + Sync + Debug {
+    fn get_db_handle(&self) -> &dyn ProcessorDataBaseHandle;
+
+    /// name of the processor, for status logging
+    /// This will get stored in the database for each (`TransactionProcessor`, transaction_version) pair
+    fn name(&self) -> &'static str;
 
     //* Below are helper methods that don't need to be implemented *//
-
-    /// Gets the connection.
-    /// If it was unable to do so (default timeout: 30s), it will keep retrying until it can.
-    fn get_conn(&self) -> PgPoolConnection {
-        let pool = self.connection_pool();
-        loop {
-            match pool.get() {
-                Ok(conn) => {
-                    GOT_CONNECTION.inc();
-                    return conn;
-                }
-                Err(err) => {
-                    UNABLE_TO_GET_CONNECTION.inc();
-                    aptos_logger::error!(
-                        "Could not get DB connection from pool, will retry in {:?}. Err: {:?}",
-                        pool.connection_timeout(),
-                        err
-                    );
-                }
-            };
-        }
-    }
-
     /// This is a helper method, tying together the other helper methods to allow tracking status in the DB
     async fn process_transactions_with_status(
         &self,
@@ -84,6 +62,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
         );
         self.mark_versions_started(start_version, end_version);
         let res = self
+            .get_db_handle()
             .process_transactions(txns, start_version, end_version)
             .await;
         // Handle block success/failure
@@ -109,7 +88,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
             false,
             None,
         );
-        self.apply_processor_status(&psms);
+        self.get_db_handle().apply_processor_status(&psms);
     }
 
     /// Writes that a version has been completed successfully for this `TransactionProcessor` to the DB
@@ -128,7 +107,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
             true,
             None,
         );
-        self.apply_processor_status(&psms);
+        self.get_db_handle().apply_processor_status(&psms);
     }
 
     /// Writes that a version has errored for this `TransactionProcessor` to the DB
@@ -140,60 +119,19 @@ pub trait TransactionProcessor: Send + Sync + Debug {
         );
         PROCESSOR_ERRORS.with_label_values(&[self.name()]).inc();
         let psm = ProcessorStatusModel::from_transaction_processing_err(tpe);
-        self.apply_processor_status(&psm);
+        self.get_db_handle().apply_processor_status(&psm);
     }
 
     /// Actually performs the write for a `ProcessorStatusModel` changeset
     fn apply_processor_status(&self, psms: &[ProcessorStatusModel]) {
-        let conn = self.get_conn();
-        let chunks = get_chunks(psms.len(), ProcessorStatusModel::field_count());
-        for (start_ind, end_ind) in chunks {
-            execute_with_better_error(
-                &conn,
-                diesel::insert_into(processor_statuses::table)
-                    .values(&psms[start_ind..end_ind])
-                    .on_conflict((dsl::name, dsl::version))
-                    .do_update()
-                    .set((
-                        dsl::success.eq(excluded(dsl::success)),
-                        dsl::details.eq(excluded(dsl::details)),
-                        dsl::last_updated.eq(excluded(dsl::last_updated)),
-                    )),
-            )
-            .expect("Error updating Processor Status!");
-        }
+        self.get_db_handle().apply_processor_status(psms)
     }
 
-    /// Gets all versions which were not successfully processed for this `TransactionProcessor` from the DB
-    /// This is so the `Tailer` can know which versions to retry
     fn get_error_versions(&self) -> Vec<u64> {
-        let conn = self.get_conn();
-
-        dsl::processor_statuses
-            .select(dsl::version)
-            .filter(
-                dsl::success
-                    .eq(false)
-                    .and(dsl::name.eq(self.name().to_string())),
-            )
-            .load::<bigdecimal::BigDecimal>(&conn)
-            .expect("Error loading the error versions only query")
-            .iter()
-            .map(bigdecimal_to_u64)
-            .collect()
+        self.get_db_handle().get_error_versions(self.name())
     }
 
-    /// Gets the highest version for this `TransactionProcessor` from the DB
-    /// This is so we know where to resume from on restarts
     fn get_max_version(&self) -> Option<u64> {
-        let conn = self.get_conn();
-
-        let res = dsl::processor_statuses
-            .select(diesel::dsl::max(dsl::version))
-            .filter(dsl::name.eq(self.name().to_string()))
-            .first::<Option<bigdecimal::BigDecimal>>(&conn);
-
-        res.expect("Error loading the max version query")
-            .map(|v| bigdecimal_to_u64(&v))
+        self.get_db_handle().get_max_version(self.name())
     }
 }

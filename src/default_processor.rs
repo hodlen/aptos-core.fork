@@ -178,8 +178,4 @@ impl TransactionProcessor for DefaultTransactionProcessor {
             ))),
         }
     }
-
-    fn connection_pool(&self) -> &PgDbPool {
-        &self.connection_pool
-    }
 }
