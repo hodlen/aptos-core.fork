@@ -66,6 +66,8 @@ struct IndexerArgs {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    /*
+
     aptos_logger::Logger::new().init();
     let args: IndexerArgs = IndexerArgs::parse();
 
@@ -135,4 +137,8 @@ async fn main() -> std::io::Result<()> {
             }
         }
     }
+
+    */
+
+    Ok(())
 }

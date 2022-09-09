@@ -1,7 +1,6 @@
 // Copyright (c) Aptos
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    database::{execute_with_better_error, PgDbPool},
     indexer::{
         errors::TransactionProcessingError,
         fetcher::{TransactionFetcher, TransactionFetcherTrait},
@@ -9,62 +8,47 @@ use crate::{
         transaction_processor::TransactionProcessor,
     },
     models::ledger_info::LedgerInfo,
-    schema::ledger_infos::{self, dsl},
 };
 use anyhow::{ensure, Context, Result};
 use aptos_logger::info;
 use aptos_rest_client::Transaction;
-use diesel::{prelude::*, RunQueryDsl};
 use std::{fmt::Debug, sync::Arc};
 use tokio::{sync::Mutex, task::JoinHandle};
 use url::{ParseError, Url};
 
-diesel_migrations::embed_migrations!();
+use super::metadata::IndexerMetaHandle;
 
 #[derive(Clone)]
 pub struct Tailer {
     pub transaction_fetcher: Arc<Mutex<dyn TransactionFetcherTrait>>,
     processors: Vec<Arc<dyn TransactionProcessor>>,
-    connection_pool: PgDbPool,
+    metadata_processor: Arc<Mutex<dyn IndexerMetaHandle>>,
 }
 
 impl Tailer {
-    pub fn new(node_url: &str, connection_pool: PgDbPool) -> Result<Tailer, ParseError> {
+    pub fn new(
+        node_url: &str,
+        metadata_processor: Arc<Mutex<dyn IndexerMetaHandle>>,
+    ) -> Result<Tailer, ParseError> {
         let url = Url::parse(node_url)?;
         let transaction_fetcher = TransactionFetcher::new(url, None);
         Ok(Self {
             transaction_fetcher: Arc::new(Mutex::new(transaction_fetcher)),
             processors: vec![],
-            connection_pool,
+            metadata_processor,
         })
     }
 
-    pub fn run_migrations(&self) {
-        info!("Running migrations...");
-        embedded_migrations::run_with_output(
-            &self
-                .connection_pool
-                .get()
-                .expect("Could not get connection for migrations"),
-            &mut std::io::stdout(),
-        )
-        .expect("migrations failed!");
-        info!("Migrations complete!");
-    }
-
     /// If chain id doesn't exist, save it. Otherwise make sure that we're indexing the same chain
-    pub async fn check_or_update_chain_id(&self) -> anyhow::Result<usize> {
+    pub async fn check_or_update_chain_id(&self) -> anyhow::Result<()> {
         info!("Checking if chain id is correct");
-        let conn = self
-            .connection_pool
-            .get()
-            .expect("DB connection should be available at this stage");
-
-        let query_chain = dsl::ledger_infos
-            .select(dsl::chain_id)
-            .load::<i64>(&conn)
-            .expect("Error loading chain id from db");
-        let maybe_existing_chain_id = query_chain.first();
+        let maybe_existing_chain_id: Option<i64> = self
+            .metadata_processor
+            .lock()
+            .await
+            .get_ledger_info()
+            .await
+            .map(|l| l.chain_id);
 
         let new_chain_id = self
             .transaction_fetcher
@@ -76,19 +60,20 @@ impl Tailer {
 
         match maybe_existing_chain_id {
             Some(chain_id) => {
-                ensure!(*chain_id == new_chain_id, "Wrong chain detected! Trying to index chain {} now but existing data is for chain {}", new_chain_id, chain_id);
+                ensure!(chain_id == new_chain_id, "Wrong chain detected! Trying to index chain {} now but existing data is for chain {}", new_chain_id, chain_id);
                 info!("Chain id matches! Continuing to index chain {}", chain_id);
-                Ok(0)
+                Ok(())
             }
             None => {
                 info!("Adding chain id {} to db, continue indexing", new_chain_id);
-                execute_with_better_error(
-                    &conn,
-                    diesel::insert_into(ledger_infos::table).values(LedgerInfo {
+                self.metadata_processor
+                    .lock()
+                    .await
+                    .set_ledger_info(LedgerInfo {
                         chain_id: new_chain_id,
-                    }),
-                )
-                .context(r#"Error updating chain_id!"#)
+                    })
+                    .await
+                    .context(r#"Error updating chain_id!"#)
             }
         }
     }
@@ -104,8 +89,8 @@ impl Tailer {
         info!("Checking for previously errored versions...");
         let mut tasks = vec![];
         for processor in &self.processors {
-            let processor2 = processor.clone();
             let self2 = self.clone();
+            let processor2 = processor.clone();
             let task = tokio::task::spawn(async move {
                 let errored_versions = processor2.get_error_versions();
                 let err_count = errored_versions.len();
@@ -255,6 +240,8 @@ pub async fn await_tasks<T: Debug>(tasks: Vec<JoinHandle<T>>) -> Vec<T> {
     results
 }
 
+/*
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -315,40 +302,16 @@ mod test {
         }
     }
 
-    pub fn wipe_database(conn: &PgPoolConnection) {
-        for table in [
-            "metadatas",
-            "token_activities",
-            "token_datas",
-            "token_propertys",
-            "collections",
-            "ownerships",
-            "write_set_changes",
-            "events",
-            "user_transactions",
-            "block_metadata_transactions",
-            "transactions",
-            "processor_statuses",
-            "ledger_infos",
-            "__diesel_schema_migrations",
-        ] {
-            conn.execute(&format!("DROP TABLE IF EXISTS {}", table))
-                .unwrap();
-        }
-    }
-
     pub fn setup_indexer() -> anyhow::Result<(PgDbPool, Tailer)> {
         let database_url = std::env::var("INDEXER_DATABASE_URL")
             .expect("must set 'INDEXER_DATABASE_URL' to run tests!");
         let conn_pool = new_db_pool(database_url.as_str())?;
-        wipe_database(&conn_pool.get()?);
 
         let mut tailer = Tailer::new("http://fake-url.aptos.dev", conn_pool.clone())?;
         tailer.transaction_fetcher = Arc::new(Mutex::new(FakeFetcher::new(
             Url::parse("http://fake-url.aptos.dev")?,
             None,
         )));
-        tailer.run_migrations();
 
         let pg_transaction_processor = DefaultTransactionProcessor::new(conn_pool.clone());
         let token_transaction_processor = TokenTransactionProcessor::new(conn_pool.clone(), false);
@@ -850,3 +813,5 @@ mod test {
         assert!(tailer.check_or_update_chain_id().await.is_ok());
     }
 }
+
+*/
