@@ -16,7 +16,13 @@ use std::{fmt::Debug, sync::Arc};
 use tokio::{sync::Mutex, task::JoinHandle};
 use url::{ParseError, Url};
 
-use super::metadata::TailerMetaHandle;
+/// Indexer metadata handle.
+/// Implement this trait in the caller side to support different DBs.
+#[async_trait::async_trait]
+pub trait TailerMetaHandle: Send + Sync {
+    async fn get_ledger_info(&self) -> Option<LedgerInfo>;
+    async fn set_ledger_info(&self, ledger_info: LedgerInfo) -> std::io::Result<()>;
+}
 
 #[derive(Clone)]
 pub struct Tailer {
