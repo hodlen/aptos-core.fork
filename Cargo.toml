@@ -28,9 +28,19 @@ serde_json = "1.0.81"
 tokio = { version = "1.21.0", features = ["full", "time"] }
 url = "2.2.2"
 
-aptos-logger = { path = "../../crates/aptos-logger" }
-aptos-metrics-core = { path = "../../crates/aptos-metrics-core" }
-aptos-rest-client = { path = "../../crates/aptos-rest-client" }
+aptos-logger = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
+aptos-metrics-core = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
+aptos-rest-client = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
 
 [[bin]]
 name = "aptos-indexer"
+
+# This is a temporary workaround to avoid multiple library
+# definitions for LZ4 (caused by rust-rocksdb).
+# This will be removed once our pull requests land.
+# https://github.com/rust-rocksdb/rust-rocksdb/issues/666
+[patch.crates-io]
+lz4 = { git = 'https://github.com/aptos-labs/lz4-rs' }
+rocksdb = { git = 'https://github.com/aptos-labs/rust-rocksdb' }
+serde-reflection = { git = "https://github.com/aptos-labs/serde-reflection", rev = "839aed62a20ddccf043c08961cfe74875741ccba" }
+diesel = { git = "https://github.com/aptos-labs/diesel", branch = "1.4.x" }
