@@ -8,10 +8,9 @@ use crate::{
 };
 use aptos_rest_client::Transaction;
 use async_trait::async_trait;
-use std::fmt::Debug;
 
 #[async_trait]
-pub trait ProcessorDataBaseHandle: Send + Sync {
+pub trait ProcessorMetadataHandle: Send + Sync {
     // Update `ProcessorStatusModel` changeset in the database
     fn apply_processor_status(&self, psms: &[ProcessorStatusModel]);
 
@@ -22,6 +21,16 @@ pub trait ProcessorDataBaseHandle: Send + Sync {
     /// Gets the highest version for this `TransactionProcessor` from the DB
     /// This is so we know where to resume from on restarts
     fn get_max_version(&self, processor_name: &str) -> Option<u64>;
+}
+
+/// The `TransactionProcessor` is used by an instance of a `Tailer` to process transactions
+#[async_trait]
+pub trait TransactionProcessor: Send + Sync {
+    fn get_metadata_handle(&self) -> &dyn ProcessorMetadataHandle;
+
+    /// name of the processor, for status logging
+    /// This will get stored in the database for each (`TransactionProcessor`, transaction_version) pair
+    fn name(&self) -> &'static str;
 
     /// Process all transactions within a block and processes it. This method will be called from `process_transaction_with_status`
     /// In case a transaction cannot be processed, we will fail the entire block.
@@ -31,16 +40,6 @@ pub trait ProcessorDataBaseHandle: Send + Sync {
         start_version: u64,
         end_version: u64,
     ) -> Result<ProcessingResult, TransactionProcessingError>;
-}
-
-/// The `TransactionProcessor` is used by an instance of a `Tailer` to process transactions
-#[async_trait]
-pub trait TransactionProcessor: Send + Sync + Debug {
-    fn get_db_handle(&self) -> &dyn ProcessorDataBaseHandle;
-
-    /// name of the processor, for status logging
-    /// This will get stored in the database for each (`TransactionProcessor`, transaction_version) pair
-    fn name(&self) -> &'static str;
 
     //* Below are helper methods that don't need to be implemented *//
     /// This is a helper method, tying together the other helper methods to allow tracking status in the DB
@@ -62,7 +61,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
         );
         self.mark_versions_started(start_version, end_version);
         let res = self
-            .get_db_handle()
+            .get_metadata_handle()
             .process_transactions(txns, start_version, end_version)
             .await;
         // Handle block success/failure
@@ -88,7 +87,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
             false,
             None,
         );
-        self.get_db_handle().apply_processor_status(&psms);
+        self.get_metadata_handle().apply_processor_status(&psms);
     }
 
     /// Writes that a version has been completed successfully for this `TransactionProcessor` to the DB
@@ -107,7 +106,7 @@ pub trait TransactionProcessor: Send + Sync + Debug {
             true,
             None,
         );
-        self.get_db_handle().apply_processor_status(&psms);
+        self.get_metadata_handle().apply_processor_status(&psms);
     }
 
     /// Writes that a version has errored for this `TransactionProcessor` to the DB
@@ -119,19 +118,6 @@ pub trait TransactionProcessor: Send + Sync + Debug {
         );
         PROCESSOR_ERRORS.with_label_values(&[self.name()]).inc();
         let psm = ProcessorStatusModel::from_transaction_processing_err(tpe);
-        self.get_db_handle().apply_processor_status(&psm);
-    }
-
-    /// Actually performs the write for a `ProcessorStatusModel` changeset
-    fn apply_processor_status(&self, psms: &[ProcessorStatusModel]) {
-        self.get_db_handle().apply_processor_status(psms)
-    }
-
-    fn get_error_versions(&self) -> Vec<u64> {
-        self.get_db_handle().get_error_versions(self.name())
-    }
-
-    fn get_max_version(&self) -> Option<u64> {
-        self.get_db_handle().get_max_version(self.name())
+        self.get_metadata_handle().apply_processor_status(&psm);
     }
 }
