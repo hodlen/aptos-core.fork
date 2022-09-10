@@ -10,10 +10,15 @@
 use aptos_logger::info;
 use clap::Parser;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use aptos_indexer::{
-    database::new_db_pool, default_processor::DefaultTransactionProcessor, indexer::tailer::Tailer,
-    token_processor::TokenTransactionProcessor,
+    database::new_db_pool,
+    default_processor::DefaultTransactionProcessor,
+    indexer::{
+        postgres_tailer::PgTailerMetaHandle,
+        tailer::{Tailer, TailerMetaHandle},
+    },
 };
 
 #[derive(Debug, Parser)]
@@ -26,10 +31,6 @@ struct IndexerArgs {
     /// URL of an Aptos node, ex: "https://fullnode.devnet.aptoslabs.com"
     #[clap(long)]
     node_url: String,
-
-    /// If set, don't run any migrations
-    #[clap(long)]
-    skip_migrations: bool,
 
     /// If set, don't try to re-run all previous failed versions before tailing new ones
     #[clap(long)]
@@ -54,11 +55,6 @@ struct IndexerArgs {
     #[clap(long, default_value_t = 1000)]
     emit_every: usize,
 
-    /// Turn on the indexer to collect token, ownership, collection and metadata and store them
-    /// in the postgres DB tables.
-    #[clap(long)]
-    index_token_data: bool,
-
     /// turn on the token URI fetcher
     #[clap(long)]
     index_token_uri_data: bool,
@@ -66,8 +62,6 @@ struct IndexerArgs {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    /*
-
     aptos_logger::Logger::new().init();
     let args: IndexerArgs = IndexerArgs::parse();
 
@@ -76,12 +70,9 @@ async fn main() -> std::io::Result<()> {
     let conn_pool = new_db_pool(&args.pg_uri).expect("Failed to create connection pool");
     info!("Created the connection pool... ");
 
-    let mut tailer =
-        Tailer::new(&args.node_url, conn_pool.clone()).expect("Failed to start tailer");
-
-    if !args.skip_migrations {
-        tailer.run_migrations();
-    }
+    let tailer_meta = PgTailerMetaHandle::new(conn_pool.clone());
+    let mut tailer = Tailer::new(&args.node_url, Arc::new(Mutex::new(tailer_meta)))
+        .expect("Failed to start tailer");
 
     tailer
         .check_or_update_chain_id()
@@ -89,11 +80,6 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to get initial chain id");
     let pg_transaction_processor = DefaultTransactionProcessor::new(conn_pool.clone());
     tailer.add_processor(Arc::new(pg_transaction_processor));
-    if args.index_token_data {
-        let token_transaction_processor =
-            TokenTransactionProcessor::new(conn_pool.clone(), args.index_token_uri_data);
-        tailer.add_processor(Arc::new(token_transaction_processor));
-    }
 
     let starting_version = match args.start_from_version {
         None => tailer.set_fetcher_to_lowest_processor_version().await,
@@ -137,8 +123,4 @@ async fn main() -> std::io::Result<()> {
             }
         }
     }
-
-    */
-
-    Ok(())
 }

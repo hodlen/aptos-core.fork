@@ -17,42 +17,26 @@ use crate::{
 use aptos_rest_client::Transaction;
 
 use field_count::FieldCount;
-use std::fmt::Debug;
 
-pub struct DefaultTransactionProcessor {
-    processor: PgTransactionProcessor,
-}
+pub struct DefaultTransactionProcessor {}
 
 impl DefaultTransactionProcessor {
-    pub fn new(connection_pool: PgDbPool) -> Self {
-        Self {
-            processor: PgTransactionProcessor::new(
-                "process_transactions",
-                connection_pool,
-                |processor: &PgTransactionProcessor,
-                 transactions: Vec<Transaction>,
-                 start_version: u64,
-                 end_version: u64| {
-                    process_transactions(
-                        &processor.get_conn(),
-                        "process_transactions",
-                        transactions,
-                        start_version,
-                        end_version,
-                    )
-                },
-            ),
-        }
-    }
-}
-
-impl Debug for DefaultTransactionProcessor {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let state = &self.processor.get_connection_pool().state();
-        write!(
-            f,
-            "DefaultTransactionProcessor {{ connections: {:?}  idle_connections: {:?} }}",
-            state.connections, state.idle_connections
+    pub fn new(connection_pool: PgDbPool) -> PgTransactionProcessor {
+        PgTransactionProcessor::new(
+            "process_transactions",
+            connection_pool,
+            |processor: &PgTransactionProcessor,
+             transactions: Vec<Transaction>,
+             start_version: u64,
+             end_version: u64| {
+                process_transactions(
+                    &processor.get_conn(),
+                    "process_transactions",
+                    transactions,
+                    start_version,
+                    end_version,
+                )
+            },
         )
     }
 }
