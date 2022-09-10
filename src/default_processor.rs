@@ -34,7 +34,7 @@ impl DefaultTransactionProcessor {
                  start_version: u64,
                  end_version: u64| {
                     process_transactions(
-                        processor.get_conn(),
+                        &processor.get_conn(),
                         "process_transactions",
                         transactions,
                         start_version,

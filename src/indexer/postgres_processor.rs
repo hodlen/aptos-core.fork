@@ -119,8 +119,8 @@ impl PgTransactionProcessor {
         &self.connection_pool
     }
 
-    pub fn get_conn(&self) -> &PgPoolConnection {
-        &get_pg_conn_from_pool(&self.connection_pool)
+    pub fn get_conn(&self) -> PgPoolConnection {
+        get_pg_conn_from_pool(&self.connection_pool)
     }
 }
 
