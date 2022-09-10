@@ -162,7 +162,6 @@ impl TransactionProcessor for PgTransactionProcessor {
         start_version: u64,
         end_version: u64,
     ) -> Result<ProcessingResult, TransactionProcessingError> {
-        self.process_transactions(transactions, start_version, end_version)
-            .await
+        (self.process_txns)(&self, transactions, start_version, end_version)
     }
 }
