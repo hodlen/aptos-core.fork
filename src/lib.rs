@@ -14,7 +14,6 @@ pub mod default_processor;
 pub mod indexer;
 pub mod models;
 pub mod schema;
-pub mod token_processor;
 mod util;
 
 /// By default, skips test unless `INDEXER_DATABASE_URL` is set.
