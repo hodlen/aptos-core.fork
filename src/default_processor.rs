@@ -27,6 +27,7 @@ impl DefaultTransactionProcessor {
     pub fn new(connection_pool: PgDbPool) -> Self {
         Self {
             processor: PgTransactionProcessor::new(
+                "process_transactions",
                 connection_pool,
                 |processor: &PgTransactionProcessor,
                  transactions: Vec<Transaction>,
@@ -34,7 +35,7 @@ impl DefaultTransactionProcessor {
                  end_version: u64| {
                     process_transactions(
                         processor.get_conn(),
-                        String::from("process_transactions"),
+                        "process_transactions",
                         transactions,
                         start_version,
                         end_version,
@@ -155,7 +156,7 @@ fn insert_to_db(
 
 fn process_transactions(
     conn: &PgPoolConnection,
-    name: String,
+    name: &'static str,
     transactions: Vec<Transaction>,
     start_version: u64,
     end_version: u64,
@@ -165,7 +166,7 @@ fn process_transactions(
 
     let tx_result = insert_to_db(
         &conn,
-        &name,
+        name,
         start_version,
         end_version,
         txns,
@@ -175,12 +176,12 @@ fn process_transactions(
         write_set_changes,
     );
     match tx_result {
-        Ok(_) => Ok(ProcessingResult::new(&name, start_version, end_version)),
+        Ok(_) => Ok(ProcessingResult::new(name, start_version, end_version)),
         Err(err) => Err(TransactionProcessingError::TransactionCommitError((
             anyhow::Error::from(err),
             start_version,
             end_version,
-            &name,
+            name,
         ))),
     }
 }

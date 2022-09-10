@@ -98,7 +98,9 @@ impl Tailer {
             let self2 = self.clone();
             let processor2 = processor.clone();
             let task = tokio::task::spawn(async move {
-                let errored_versions = processor2.get_error_versions();
+                let errored_versions = processor2
+                    .get_metadata_handle()
+                    .get_error_versions(processor2.name());
                 let err_count = errored_versions.len();
                 info!(
                     "Found {} previously errored versions for {}",
@@ -136,7 +138,10 @@ impl Tailer {
     pub async fn set_fetcher_to_lowest_processor_version(&self) -> u64 {
         let mut lowest = u64::MAX;
         for processor in &self.processors {
-            let max_version = processor.get_max_version().unwrap_or_default();
+            let max_version = processor
+                .get_metadata_handle()
+                .get_max_version(processor.name())
+                .unwrap_or_default();
             aptos_logger::debug!(
                 "Processor {} max version is {}",
                 processor.name(),

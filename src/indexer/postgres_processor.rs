@@ -77,6 +77,7 @@ impl ProcessorMetadataHandle for PgProcessorMetadataHandle {
 
 /// Implements processing logic for Transaction Processor backed by Postgres.
 pub struct PgTransactionProcessor {
+    name: &'static str,
     connection_pool: PgDbPool,
     metadata_handle: PgProcessorMetadataHandle,
     process_txns: Arc<
@@ -92,7 +93,7 @@ pub struct PgTransactionProcessor {
 }
 
 impl PgTransactionProcessor {
-    pub fn new<F>(connection_pool: PgDbPool, process_txns: F) -> Self
+    pub fn new<F>(name: &'static str, connection_pool: PgDbPool, process_txns: F) -> Self
     where
         F: Fn(
                 &Self,
@@ -105,6 +106,7 @@ impl PgTransactionProcessor {
             + 'static,
     {
         PgTransactionProcessor {
+            name,
             connection_pool,
             process_txns: Arc::new(process_txns),
             metadata_handle: PgProcessorMetadataHandle {
@@ -146,11 +148,11 @@ pub fn get_pg_conn_from_pool(pool: &PgDbPool) -> PgPoolConnection {
 #[async_trait::async_trait]
 impl TransactionProcessor for PgTransactionProcessor {
     fn get_metadata_handle(&self) -> &dyn ProcessorMetadataHandle {
-        self.get_metadata_handle()
+        &self.metadata_handle
     }
 
     fn name(&self) -> &'static str {
-        self.name()
+        self.name
     }
 
     async fn process_transactions(

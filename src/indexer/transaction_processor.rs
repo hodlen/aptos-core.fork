@@ -61,7 +61,6 @@ pub trait TransactionProcessor: Send + Sync {
         );
         self.mark_versions_started(start_version, end_version);
         let res = self
-            .get_metadata_handle()
             .process_transactions(txns, start_version, end_version)
             .await;
         // Handle block success/failure
