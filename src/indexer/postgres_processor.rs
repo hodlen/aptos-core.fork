@@ -105,12 +105,13 @@ impl PgTransactionProcessor {
             + Sync
             + 'static,
     {
+        let meta_pool = connection_pool.clone();
         PgTransactionProcessor {
             name,
             connection_pool,
             process_txns: Arc::new(process_txns),
             metadata_handle: PgProcessorMetadataHandle {
-                get_conn: Arc::new(|| get_pg_conn_from_pool(&connection_pool)),
+                get_conn: Arc::new(move || get_pg_conn_from_pool(&meta_pool)),
             },
         }
     }
