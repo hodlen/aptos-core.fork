@@ -4,8 +4,8 @@
 use crate::{
     database::{execute_with_better_error, get_chunks, PgDbPool, PgPoolConnection},
     indexer::{
-        errors::TransactionProcessingError, processing_result::ProcessingResult,
-        transaction_processor::TransactionProcessor,
+        errors::TransactionProcessingError, postgres_processor::PgTransactionProcessor,
+        processing_result::ProcessingResult,
     },
     models::{
         events::EventModel,
@@ -15,23 +15,39 @@ use crate::{
     schema,
 };
 use aptos_rest_client::Transaction;
-use async_trait::async_trait;
+
 use field_count::FieldCount;
 use std::fmt::Debug;
 
 pub struct DefaultTransactionProcessor {
-    connection_pool: PgDbPool,
+    processor: PgTransactionProcessor,
 }
 
 impl DefaultTransactionProcessor {
     pub fn new(connection_pool: PgDbPool) -> Self {
-        Self { connection_pool }
+        Self {
+            processor: PgTransactionProcessor::new(
+                connection_pool,
+                |processor: &PgTransactionProcessor,
+                 transactions: Vec<Transaction>,
+                 start_version: u64,
+                 end_version: u64| {
+                    process_transactions(
+                        processor.get_conn(),
+                        String::from("process_transactions"),
+                        transactions,
+                        start_version,
+                        end_version,
+                    )
+                },
+            ),
+        }
     }
 }
 
 impl Debug for DefaultTransactionProcessor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let state = &self.connection_pool.state();
+        let state = &self.processor.get_connection_pool().state();
         write!(
             f,
             "DefaultTransactionProcessor {{ connections: {:?}  idle_connections: {:?} }}",
@@ -137,45 +153,34 @@ fn insert_to_db(
         })
 }
 
-#[async_trait]
-impl TransactionProcessor for DefaultTransactionProcessor {
-    fn name(&self) -> &'static str {
-        "default_processor"
-    }
+fn process_transactions(
+    conn: &PgPoolConnection,
+    name: String,
+    transactions: Vec<Transaction>,
+    start_version: u64,
+    end_version: u64,
+) -> Result<ProcessingResult, TransactionProcessingError> {
+    let (txns, user_txns, bm_txns, events, write_set_changes) =
+        TransactionModel::from_transactions(&transactions);
 
-    async fn process_transactions(
-        &self,
-        transactions: Vec<Transaction>,
-        start_version: u64,
-        end_version: u64,
-    ) -> Result<ProcessingResult, TransactionProcessingError> {
-        let (txns, user_txns, bm_txns, events, write_set_changes) =
-            TransactionModel::from_transactions(&transactions);
-
-        let conn = self.get_conn();
-        let tx_result = insert_to_db(
-            &conn,
-            self.name(),
+    let tx_result = insert_to_db(
+        &conn,
+        &name,
+        start_version,
+        end_version,
+        txns,
+        user_txns,
+        bm_txns,
+        events,
+        write_set_changes,
+    );
+    match tx_result {
+        Ok(_) => Ok(ProcessingResult::new(&name, start_version, end_version)),
+        Err(err) => Err(TransactionProcessingError::TransactionCommitError((
+            anyhow::Error::from(err),
             start_version,
             end_version,
-            txns,
-            user_txns,
-            bm_txns,
-            events,
-            write_set_changes,
-        );
-        match tx_result {
-            Ok(_) => Ok(ProcessingResult::new(
-                self.name(),
-                start_version,
-                end_version,
-            )),
-            Err(err) => Err(TransactionProcessingError::TransactionCommitError((
-                anyhow::Error::from(err),
-                start_version,
-                end_version,
-                self.name(),
-            ))),
-        }
+            &name,
+        ))),
     }
 }

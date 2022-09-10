@@ -108,15 +108,23 @@ impl PgTransactionProcessor {
             connection_pool,
             process_txns: Arc::new(process_txns),
             metadata_handle: PgProcessorMetadataHandle {
-                get_conn: Arc::new(|| get_conn(&connection_pool)),
+                get_conn: Arc::new(|| get_pg_conn_from_pool(&connection_pool)),
             },
         }
+    }
+
+    pub fn get_connection_pool(&self) -> &PgDbPool {
+        &self.connection_pool
+    }
+
+    pub fn get_conn(&self) -> &PgPoolConnection {
+        &get_pg_conn_from_pool(&self.connection_pool)
     }
 }
 
 /// Gets the connection.
 /// If it was unable to do so (default timeout: 30s), it will keep retrying until it can.
-fn get_conn(pool: &PgDbPool) -> PgPoolConnection {
+pub fn get_pg_conn_from_pool(pool: &PgDbPool) -> PgPoolConnection {
     loop {
         match pool.get() {
             Ok(conn) => {
