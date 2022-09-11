@@ -23,7 +23,7 @@ pub struct DefaultTransactionProcessor {}
 impl DefaultTransactionProcessor {
     pub fn new(connection_pool: PgDbPool) -> PgTransactionProcessor {
         PgTransactionProcessor::new(
-            "process_transactions",
+            "default_processor",
             connection_pool,
             |processor: &PgTransactionProcessor,
              transactions: Vec<Transaction>,
@@ -31,7 +31,7 @@ impl DefaultTransactionProcessor {
              end_version: u64| {
                 process_transactions(
                     &processor.get_conn(),
-                    "process_transactions",
+                    "default_processor",
                     transactions,
                     start_version,
                     end_version,
