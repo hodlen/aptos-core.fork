@@ -15,10 +15,7 @@ use tokio::sync::Mutex;
 use aptos_indexer::{
     database::new_db_pool,
     default_processor::DefaultTransactionProcessor,
-    indexer::{
-        postgres_tailer::PgTailerMetaHandle,
-        tailer::{Tailer, TailerMetaHandle},
-    },
+    indexer::{postgres_tailer::PgTailerMetaHandle, tailer::Tailer},
 };
 
 #[derive(Debug, Parser)]
@@ -55,6 +52,11 @@ struct IndexerArgs {
     #[clap(long, default_value_t = 1000)]
     emit_every: usize,
 
+    /// Turn on the indexer to collect token, ownership, collection and metadata and store them
+    /// in the postgres DB tables.
+    #[clap(long)]
+    index_token_data: bool,
+
     /// turn on the token URI fetcher
     #[clap(long)]
     index_token_uri_data: bool,
@@ -70,9 +72,11 @@ async fn main() -> std::io::Result<()> {
     let conn_pool = new_db_pool(&args.pg_uri).expect("Failed to create connection pool");
     info!("Created the connection pool... ");
 
-    let tailer_meta = PgTailerMetaHandle::new(conn_pool.clone());
-    let mut tailer = Tailer::new(&args.node_url, Arc::new(Mutex::new(tailer_meta)))
-        .expect("Failed to start tailer");
+    let mut tailer = Tailer::new(
+        &args.node_url,
+        Arc::new(Mutex::new(PgTailerMetaHandle::new(conn_pool.clone()))),
+    )
+    .expect("Failed to start tailer");
 
     tailer
         .check_or_update_chain_id()

@@ -3,7 +3,7 @@
 #![allow(clippy::extra_unused_lifetimes)]
 use crate::schema::ledger_infos;
 
-#[derive(Debug, Identifiable, Insertable, Queryable)]
+#[derive(Debug, Identifiable, Insertable, Queryable, Clone, Copy)]
 #[diesel(table_name = "ledger_infos")]
 #[primary_key(chain_id)]
 pub struct LedgerInfo {

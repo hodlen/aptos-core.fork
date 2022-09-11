@@ -313,16 +313,40 @@ mod test {
         }
     }
 
+    pub fn wipe_database(conn: &PgPoolConnection) {
+        for table in [
+            "metadatas",
+            "token_activities",
+            "token_datas",
+            "token_propertys",
+            "collections",
+            "ownerships",
+            "write_set_changes",
+            "events",
+            "user_transactions",
+            "block_metadata_transactions",
+            "transactions",
+            "processor_statuses",
+            "ledger_infos",
+            "__diesel_schema_migrations",
+        ] {
+            conn.execute(&format!("DROP TABLE IF EXISTS {}", table))
+                .unwrap();
+        }
+    }
+
     pub fn setup_indexer() -> anyhow::Result<(PgDbPool, Tailer)> {
         let database_url = std::env::var("INDEXER_DATABASE_URL")
             .expect("must set 'INDEXER_DATABASE_URL' to run tests!");
         let conn_pool = new_db_pool(database_url.as_str())?;
+        wipe_database(&conn_pool.get()?);
 
         let mut tailer = Tailer::new("http://fake-url.aptos.dev", conn_pool.clone())?;
         tailer.transaction_fetcher = Arc::new(Mutex::new(FakeFetcher::new(
             Url::parse("http://fake-url.aptos.dev")?,
             None,
         )));
+        tailer.run_migrations();
 
         let pg_transaction_processor = DefaultTransactionProcessor::new(conn_pool.clone());
         let token_transaction_processor = TokenTransactionProcessor::new(conn_pool.clone(), false);

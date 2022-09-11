@@ -3,7 +3,6 @@ use std::sync::Arc;
 use crate::database::get_chunks;
 use crate::util::bigdecimal_to_u64;
 use crate::{
-    counters::{GOT_CONNECTION, UNABLE_TO_GET_CONNECTION},
     database::{execute_with_better_error, PgDbPool, PgPoolConnection},
     models::processor_statuses::ProcessorStatusModel,
     schema,
@@ -15,6 +14,7 @@ use field_count::FieldCount;
 use schema::processor_statuses::{self, dsl};
 
 use super::errors::TransactionProcessingError;
+use super::postgres_utils::get_pg_conn_from_pool;
 use super::processing_result::ProcessingResult;
 use super::transaction_processor::{ProcessorMetadataHandle, TransactionProcessor};
 
@@ -122,27 +122,6 @@ impl PgTransactionProcessor {
 
     pub fn get_conn(&self) -> PgPoolConnection {
         get_pg_conn_from_pool(&self.connection_pool)
-    }
-}
-
-/// Gets the connection.
-/// If it was unable to do so (default timeout: 30s), it will keep retrying until it can.
-pub fn get_pg_conn_from_pool(pool: &PgDbPool) -> PgPoolConnection {
-    loop {
-        match pool.get() {
-            Ok(conn) => {
-                GOT_CONNECTION.inc();
-                return conn;
-            }
-            Err(err) => {
-                UNABLE_TO_GET_CONNECTION.inc();
-                aptos_logger::error!(
-                    "Could not get DB connection from pool, will retry in {:?}. Err: {:?}",
-                    pool.connection_timeout(),
-                    err
-                );
-            }
-        };
     }
 }
 
