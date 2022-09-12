@@ -21,7 +21,7 @@ use url::{ParseError, Url};
 #[async_trait::async_trait]
 pub trait TailerMetaHandle: Send + Sync {
     async fn get_ledger_info(&self) -> Option<LedgerInfo>;
-    async fn set_ledger_info(&self, ledger_info: LedgerInfo) -> std::io::Result<()>;
+    async fn set_ledger_info(&self, ledger_info: LedgerInfo) -> anyhow::Result<()>;
 }
 
 #[derive(Clone)]

@@ -20,16 +20,13 @@ impl TailerMetaHandle for PgTailerMetaHandle {
             .expect("Error loading chain id from db");
         query_chain.first().map(|l| *l)
     }
-    async fn set_ledger_info(&self, ledger_info: LedgerInfo) -> std::io::Result<()> {
+    async fn set_ledger_info(&self, ledger_info: LedgerInfo) -> anyhow::Result<()> {
         match execute_with_better_error(
             &get_pg_conn_from_pool(&self.connection_pool),
             diesel::insert_into(ledger_infos::table).values(ledger_info),
         ) {
             Ok(_) => Ok(()),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::WriteZero,
-                e.to_string(),
-            )),
+            Err(e) => Err(anyhow::Error::new(e)),
         }
     }
 }
