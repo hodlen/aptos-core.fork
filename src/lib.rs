@@ -16,6 +16,8 @@ pub mod models;
 pub mod schema;
 mod util;
 
+pub use aptos_logger as logger;
+
 pub mod api_types {
     pub use aptos_rest_client::Transaction;
 }
