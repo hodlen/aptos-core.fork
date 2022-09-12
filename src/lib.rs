@@ -16,6 +16,10 @@ pub mod models;
 pub mod schema;
 mod util;
 
+pub mod api_types {
+    pub use aptos_rest_client::Transaction;
+}
+
 /// By default, skips test unless `INDEXER_DATABASE_URL` is set.
 /// In CI, will explode if `INDEXER_DATABASE_URL` is NOT set.
 pub fn should_skip_pg_tests() -> bool {
