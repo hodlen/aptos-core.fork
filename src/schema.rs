@@ -1,7 +1,6 @@
-// Copyright (c) Aptos
-// SPDX-License-Identifier: Apache-2.0
+// @generated automatically by Diesel CLI.
 
-table! {
+diesel::table! {
     block_metadata_transactions (hash) {
         hash -> Varchar,
         id -> Varchar,
@@ -16,7 +15,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     collections (collection_id) {
         collection_id -> Varchar,
         creator -> Varchar,
@@ -29,7 +28,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     events (key, sequence_number) {
         transaction_hash -> Varchar,
         key -> Varchar,
@@ -41,13 +40,13 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     ledger_infos (chain_id) {
         chain_id -> Int8,
     }
 }
 
-table! {
+diesel::table! {
     metadatas (token_id) {
         token_id -> Varchar,
         name -> Nullable<Varchar>,
@@ -64,7 +63,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     ownerships (ownership_id) {
         ownership_id -> Varchar,
         token_id -> Nullable<Varchar>,
@@ -75,7 +74,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     processor_statuses (name, version) {
         name -> Varchar,
         version -> Numeric,
@@ -85,7 +84,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     token_activities (event_key, sequence_number) {
         event_key -> Varchar,
         sequence_number -> Numeric,
@@ -99,7 +98,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     token_datas (token_data_id) {
         token_data_id -> Varchar,
         creator -> Varchar,
@@ -122,7 +121,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     token_propertys (token_id) {
         token_id -> Varchar,
         previous_token_id -> Varchar,
@@ -134,7 +133,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     transactions (hash) {
         #[sql_name = "type"]
         type_ -> Varchar,
@@ -151,7 +150,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     user_transactions (hash) {
         hash -> Varchar,
         signature -> Jsonb,
@@ -165,7 +164,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     write_set_changes (transaction_hash, hash) {
         transaction_hash -> Varchar,
         hash -> Varchar,
@@ -179,7 +178,7 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(
+diesel::allow_tables_to_appear_in_same_query!(
     block_metadata_transactions,
     collections,
     events,

@@ -23,10 +23,11 @@ pub struct PgProcessorMetadataHandle {
     get_conn: Arc<dyn Fn() -> PgPoolConnection + Send + Sync>,
 }
 
+#[async_trait::async_trait]
 impl ProcessorMetadataHandle for PgProcessorMetadataHandle {
     /// Gets all versions which were not successfully processed for this `TransactionProcessor` from the DB
     /// This is so the `Tailer` can know which versions to retry
-    fn get_error_versions(&self, processor_name: &str) -> Vec<u64> {
+    async fn get_error_versions(&self, processor_name: &str) -> Vec<u64> {
         let conn = (self.get_conn)();
 
         dsl::processor_statuses
@@ -41,7 +42,7 @@ impl ProcessorMetadataHandle for PgProcessorMetadataHandle {
 
     /// Gets the highest version for this `TransactionProcessor` from the DB
     /// This is so we know where to resume from on restarts
-    fn get_max_version(&self, processor_name: &str) -> Option<u64> {
+    async fn get_max_version(&self, processor_name: &str) -> Option<u64> {
         let conn = (self.get_conn)();
 
         let res = dsl::processor_statuses
@@ -54,7 +55,7 @@ impl ProcessorMetadataHandle for PgProcessorMetadataHandle {
     }
 
     /// Actually performs the write for a `ProcessorStatusModel` changeset
-    fn apply_processor_status(&self, psms: &[ProcessorStatusModel]) {
+    async fn apply_processor_status(&self, psms: &[ProcessorStatusModel]) {
         let conn = (self.get_conn)();
         let chunks = get_chunks(psms.len(), ProcessorStatusModel::field_count());
         for (start_ind, end_ind) in chunks {

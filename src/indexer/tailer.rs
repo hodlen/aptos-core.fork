@@ -100,7 +100,8 @@ impl Tailer {
             let task = tokio::task::spawn(async move {
                 let errored_versions = processor2
                     .get_metadata_handle()
-                    .get_error_versions(processor2.name());
+                    .get_error_versions(processor2.name())
+                    .await;
                 let err_count = errored_versions.len();
                 info!(
                     "Found {} previously errored versions for {}",
@@ -141,6 +142,7 @@ impl Tailer {
             let max_version = processor
                 .get_metadata_handle()
                 .get_max_version(processor.name())
+                .await
                 .unwrap_or_default();
             aptos_logger::debug!(
                 "Processor {} max version is {}",

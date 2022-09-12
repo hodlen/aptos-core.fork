@@ -12,15 +12,15 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait ProcessorMetadataHandle: Send + Sync {
     // Update `ProcessorStatusModel` changeset in the database
-    fn apply_processor_status(&self, psms: &[ProcessorStatusModel]);
+    async fn apply_processor_status(&self, psms: &[ProcessorStatusModel]);
 
     /// Gets all versions which were not successfully processed for this `TransactionProcessor` from the DB
     /// This is so the `Tailer` can know which versions to retry
-    fn get_error_versions(&self, processor_name: &str) -> Vec<u64>;
+    async fn get_error_versions(&self, processor_name: &str) -> Vec<u64>;
 
     /// Gets the highest version for this `TransactionProcessor` from the DB
     /// This is so we know where to resume from on restarts
-    fn get_max_version(&self, processor_name: &str) -> Option<u64>;
+    async fn get_max_version(&self, processor_name: &str) -> Option<u64>;
 }
 
 /// The `TransactionProcessor` is used by an instance of a `Tailer` to process transactions
