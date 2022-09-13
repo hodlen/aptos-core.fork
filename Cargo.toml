@@ -27,9 +27,9 @@ serde_json = "1.0.81"
 tokio = { version = "1.21.0", features = ["full", "time"] }
 url = "2.2.2"
 
-aptos-logger = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
-aptos-metrics-core = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
-aptos-rest-client = { git="https://github.com/aptos-labs/aptos-core.git", rev="75b3da75326075041b1987fc0edad436d3fd9ac7" }
+aptos-logger = { git="https://github.com/hodlen/aptos-core.fork", branch="devnet" }
+aptos-metrics-core = { git="https://github.com/hodlen/aptos-core.fork", branch="devnet" }
+aptos-rest-client = { git="https://github.com/hodlen/aptos-core.fork", branch="devnet" }
 
 [[bin]]
 name = "aptos-indexer"
