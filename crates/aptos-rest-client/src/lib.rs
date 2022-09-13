@@ -884,7 +884,7 @@ impl Client {
 
     pub async fn get_table_item<K: Serialize>(
         &self,
-        table_handle: u128,
+        table_handle: String,
         key_type: &str,
         value_type: &str,
         key: K,
