@@ -59,7 +59,7 @@ pub trait TransactionProcessor: Send + Sync {
             txns.first().unwrap().version().unwrap(),
             txns.last().unwrap().version().unwrap(),
         );
-        self.mark_versions_started(start_version, end_version);
+        self.mark_versions_started(start_version, end_version).await;
         let res = self
             .process_transactions(txns, start_version, end_version)
             .await;
@@ -72,7 +72,7 @@ pub trait TransactionProcessor: Send + Sync {
     }
 
     /// Writes that a version has been started for this `TransactionProcessor` to the DB
-    fn mark_versions_started(&self, start_version: u64, end_version: u64) {
+    async fn mark_versions_started(&self, start_version: u64, end_version: u64) {
         aptos_logger::debug!(
             "[{}] Marking processing versions started from versions {} to {}",
             self.name(),
@@ -86,11 +86,13 @@ pub trait TransactionProcessor: Send + Sync {
             false,
             None,
         );
-        self.get_metadata_handle().apply_processor_status(&psms);
+        self.get_metadata_handle()
+            .apply_processor_status(&psms)
+            .await;
     }
 
     /// Writes that a version has been completed successfully for this `TransactionProcessor` to the DB
-    fn update_status_success(&self, processing_result: &ProcessingResult) {
+    async fn update_status_success(&self, processing_result: &ProcessingResult) {
         aptos_logger::debug!(
             "[{}] Marking processing version OK from versions {} to {}",
             self.name(),
@@ -105,11 +107,13 @@ pub trait TransactionProcessor: Send + Sync {
             true,
             None,
         );
-        self.get_metadata_handle().apply_processor_status(&psms);
+        self.get_metadata_handle()
+            .apply_processor_status(&psms)
+            .await;
     }
 
     /// Writes that a version has errored for this `TransactionProcessor` to the DB
-    fn update_status_err(&self, tpe: &TransactionProcessingError) {
+    async fn update_status_err(&self, tpe: &TransactionProcessingError) {
         aptos_logger::debug!(
             "[{}] Marking processing version Err: {:?}",
             self.name(),
@@ -117,6 +121,8 @@ pub trait TransactionProcessor: Send + Sync {
         );
         PROCESSOR_ERRORS.with_label_values(&[self.name()]).inc();
         let psm = ProcessorStatusModel::from_transaction_processing_err(tpe);
-        self.get_metadata_handle().apply_processor_status(&psm);
+        self.get_metadata_handle()
+            .apply_processor_status(&psm)
+            .await;
     }
 }
