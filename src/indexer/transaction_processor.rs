@@ -65,8 +65,8 @@ pub trait TransactionProcessor: Send + Sync {
             .await;
         // Handle block success/failure
         match res.as_ref() {
-            Ok(processing_result) => self.update_status_success(processing_result),
-            Err(tpe) => self.update_status_err(tpe),
+            Ok(processing_result) => self.update_status_success(processing_result).await,
+            Err(tpe) => self.update_status_err(tpe).await,
         };
         res
     }
