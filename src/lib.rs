@@ -20,6 +20,7 @@ mod util;
 pub use aptos_logger as logger;
 pub use aptos_rest_client;
 pub use aptos_rest_client::aptos_api_types;
+pub use aptos_types;
 
 /// By default, skips test unless `INDEXER_DATABASE_URL` is set.
 /// In CI, will explode if `INDEXER_DATABASE_URL` is NOT set.

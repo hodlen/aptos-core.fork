@@ -30,6 +30,7 @@ url = "2.2.2"
 aptos-logger = { git="https://github.com/aptos-labs/aptos-core.git", tag="aptos-cli-v0.3.5" }
 aptos-metrics-core = { git="https://github.com/aptos-labs/aptos-core.git", tag="aptos-cli-v0.3.5" }
 aptos-rest-client = { git="https://github.com/aptos-labs/aptos-core.git", tag="aptos-cli-v0.3.5" }
+aptos-types = { git="https://github.com/aptos-labs/aptos-core.git", tag="aptos-cli-v0.3.5" }
 
 [[bin]]
 name = "aptos-indexer"
