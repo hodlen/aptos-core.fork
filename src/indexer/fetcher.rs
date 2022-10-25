@@ -3,6 +3,7 @@
 
 use crate::counters::{FETCHED_TRANSACTION, UNABLE_TO_FETCH_TRANSACTION};
 use aptos_logger::prelude::*;
+use aptos_rest_client::error::RestError;
 use aptos_rest_client::{retriable, retriable_with_404, Client as RestClient, State, Transaction};
 use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
@@ -128,6 +129,9 @@ async fn fetch_nexts(client: RestClient, starting_version: u64) -> Vec<Transacti
         }
         Err(err) => {
             UNABLE_TO_FETCH_TRANSACTION.inc();
+            if let RestError::Unknown(_) = err {
+                return vec![];
+            }
             aptos_logger::error!(
                 "Could not fetch {} transactions starting at {}. Err: {:?}",
                 TRANSACTION_FETCH_BATCH_SIZE,
