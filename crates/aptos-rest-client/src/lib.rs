@@ -1310,11 +1310,8 @@ impl Client {
                         should_retry(inner.status_code, Some(inner.error.clone()))
                     }
                     RestError::Http(status_code, _e) => should_retry(*status_code, None),
-                    RestError::Bcs(_)
-                    | RestError::Json(_)
-                    | RestError::Timeout(_)
-                    | RestError::Unknown(_) => true,
-                    RestError::UrlParse(_) => false,
+                    RestError::Bcs(_) | RestError::Json(_) | RestError::Timeout(_) => true,
+                    RestError::Unknown(_) | RestError::UrlParse(_) => false,
                 },
             };
 
