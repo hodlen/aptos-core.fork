@@ -3,6 +3,7 @@
 
 use crate::counters::{FETCHED_TRANSACTION, UNABLE_TO_FETCH_TRANSACTION};
 use aptos_logger::prelude::*;
+use aptos_rest_client::error::RestError;
 use aptos_rest_client::{retriable, retriable_with_404, Client as RestClient, State, Transaction};
 use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
@@ -14,7 +15,7 @@ use url::Url;
 // TODO: make this configurable
 const RETRY_TIME_MILLIS: u64 = 1000;
 const MAX_RETRY_TIME_MILLIS: u64 = 120000;
-const TRANSACTION_FETCH_BATCH_SIZE: u16 = 500;
+const TRANSACTION_FETCH_BATCH_SIZE: u16 = 50;
 const TRANSACTION_CHANNEL_SIZE: usize = 35;
 const MAX_THREADS: usize = 10;
 static STARTING_RETRY_TIME: Duration = Duration::from_millis(RETRY_TIME_MILLIS);
@@ -88,7 +89,11 @@ impl Fetcher {
                     self.current_version + (i as u64 * TRANSACTION_FETCH_BATCH_SIZE as u64),
                 ));
             }
-            let mut res: Vec<Vec<Transaction>> = futures::future::join_all(futures).await;
+            let mut res: Vec<Vec<Transaction>> = futures::future::join_all(futures)
+                .await
+                .into_iter()
+                .filter(|txs| !txs.is_empty())
+                .collect();
             // Sort by first transaction of batch's version
             res.sort_by(|a, b| {
                 a.first()
@@ -134,6 +139,10 @@ async fn fetch_nexts(client: RestClient, starting_version: u64) -> Vec<Transacti
                 starting_version,
                 err
             );
+            // If the problem is due to the fullnode, We cannot let indexer crash.
+            if let RestError::Unknown(_) = err {
+                return vec![];
+            }
             panic!(
                 "Could not fetch {} transactions starting at {} in {}ms!",
                 TRANSACTION_FETCH_BATCH_SIZE, starting_version, MAX_RETRY_TIME_MILLIS
