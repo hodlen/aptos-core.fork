@@ -105,12 +105,12 @@ checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
 [[package]]
 name = "aptos-aggregator"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-crypto",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-state-view",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "better_any",
  "move-binary-format",
@@ -123,13 +123,13 @@ dependencies = [
 [[package]]
 name = "aptos-api-types"
 version = "0.0.1"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-config",
- "aptos-crypto",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-openapi",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-vm",
  "async-trait",
  "bcs 0.1.3",
@@ -155,18 +155,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "aptos-bitvec"
+version = "0.1.0"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "serde 1.0.147",
+ "serde_bytes",
+]
+
+[[package]]
 name = "aptos-config"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-crypto",
- "aptos-crypto-derive",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-global-constants",
- "aptos-logger",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-secure-storage",
  "aptos-temppath",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "get_if_addrs",
  "mirai-annotations",
@@ -184,7 +193,38 @@ version = "0.0.3"
 source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
 dependencies = [
  "anyhow",
- "aptos-crypto-derive",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "bcs 0.1.3",
+ "blst",
+ "bytes",
+ "curve25519-dalek",
+ "digest 0.9.0",
+ "ed25519-dalek",
+ "hex",
+ "hkdf 0.10.0",
+ "libsecp256k1",
+ "more-asserts",
+ "once_cell",
+ "rand 0.7.3",
+ "rand_core 0.5.1",
+ "ring",
+ "serde 1.0.147",
+ "serde-name",
+ "serde_bytes",
+ "sha2 0.9.9",
+ "static_assertions",
+ "thiserror",
+ "tiny-keccak",
+ "x25519-dalek",
+]
+
+[[package]]
+name = "aptos-crypto"
+version = "0.0.3"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "anyhow",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "blst",
  "bytes",
@@ -220,13 +260,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "aptos-crypto-derive"
+version = "0.0.3"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "aptos-gas"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-global-constants",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "clap 3.2.23",
  "framework",
@@ -243,7 +293,7 @@ dependencies = [
 [[package]]
 name = "aptos-github-client"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "proxy",
  "serde 1.0.147",
@@ -255,17 +305,17 @@ dependencies = [
 [[package]]
 name = "aptos-global-constants"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 
 [[package]]
 name = "aptos-indexer"
 version = "0.0.1"
 dependencies = [
  "anyhow",
- "aptos-logger",
- "aptos-metrics-core",
+ "aptos-logger 0.1.0 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
  "aptos-rest-client",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
  "async-trait",
  "bigdecimal",
  "chrono",
@@ -289,9 +339,24 @@ version = "0.1.0"
 source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
 
 [[package]]
+name = "aptos-infallible"
+version = "0.1.0"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+
+[[package]]
 name = "aptos-log-derive"
 version = "0.1.0"
 source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "aptos-log-derive"
+version = "0.1.0"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -303,8 +368,31 @@ name = "aptos-logger"
 version = "0.1.0"
 source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
 dependencies = [
- "aptos-infallible",
- "aptos-log-derive",
+ "aptos-infallible 0.1.0 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "aptos-log-derive 0.1.0 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "backtrace",
+ "chrono",
+ "erased-serde",
+ "futures",
+ "hostname",
+ "once_cell",
+ "prometheus",
+ "serde 1.0.147",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "aptos-logger"
+version = "0.1.0"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-log-derive 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "backtrace",
  "chrono",
  "erased-serde",
@@ -331,9 +419,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "aptos-metrics-core"
+version = "0.1.0"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "anyhow",
+ "prometheus",
+]
+
+[[package]]
 name = "aptos-module-verifier"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "move-binary-format",
  "move-core-types",
@@ -342,7 +439,7 @@ dependencies = [
 [[package]]
 name = "aptos-openapi"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "async-trait",
  "percent-encoding",
@@ -355,14 +452,14 @@ dependencies = [
 [[package]]
 name = "aptos-parallel-executor"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-aggregator",
- "aptos-infallible",
- "aptos-metrics-core",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-state-view",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "arc-swap",
  "bcs 0.1.3",
  "crossbeam",
@@ -377,14 +474,14 @@ dependencies = [
 [[package]]
 name = "aptos-rest-client"
 version = "0.0.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-api-types",
- "aptos-crypto",
- "aptos-infallible",
- "aptos-logger",
- "aptos-types",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "bytes",
  "futures",
@@ -403,10 +500,10 @@ dependencies = [
 [[package]]
 name = "aptos-sdk-builder"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "heck 0.3.3",
  "move-core-types",
@@ -422,10 +519,10 @@ dependencies = [
 [[package]]
 name = "aptos-secure-net"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
- "aptos-logger",
- "aptos-metrics-core",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "once_cell",
  "serde 1.0.147",
  "thiserror",
@@ -434,13 +531,13 @@ dependencies = [
 [[package]]
 name = "aptos-secure-storage"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-crypto",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-github-client",
- "aptos-infallible",
- "aptos-logger",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-temppath",
  "aptos-time-service",
  "aptos-vault-client",
@@ -458,11 +555,11 @@ dependencies = [
 [[package]]
 name = "aptos-state-view"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-crypto",
- "aptos-types",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "serde 1.0.147",
  "serde_bytes",
@@ -472,7 +569,7 @@ dependencies = [
 [[package]]
 name = "aptos-temppath"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "hex",
  "rand 0.7.3",
@@ -481,9 +578,9 @@ dependencies = [
 [[package]]
 name = "aptos-time-service"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
- "aptos-infallible",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "enum_dispatch",
  "thiserror",
 ]
@@ -494,9 +591,36 @@ version = "0.0.3"
 source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
 dependencies = [
  "anyhow",
- "aptos-bitvec",
- "aptos-crypto",
- "aptos-crypto-derive",
+ "aptos-bitvec 0.1.0 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "aptos-crypto 0.0.3 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet)",
+ "bcs 0.1.3",
+ "chrono",
+ "hex",
+ "itertools",
+ "move-core-types",
+ "move-table-extension",
+ "num-derive",
+ "num-traits 0.2.15",
+ "once_cell",
+ "rand 0.7.3",
+ "serde 1.0.147",
+ "serde_bytes",
+ "serde_json",
+ "serde_yaml 0.8.26",
+ "thiserror",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "aptos-types"
+version = "0.0.3"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
+dependencies = [
+ "anyhow",
+ "aptos-bitvec 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "chrono",
  "hex",
@@ -518,9 +642,9 @@ dependencies = [
 [[package]]
 name = "aptos-vault-client"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
- "aptos-crypto",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "base64",
  "chrono",
  "native-tls",
@@ -534,19 +658,19 @@ dependencies = [
 [[package]]
 name = "aptos-vm"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-aggregator",
- "aptos-crypto",
- "aptos-crypto-derive",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-crypto-derive 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-gas",
- "aptos-logger",
- "aptos-metrics-core",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-module-verifier",
  "aptos-parallel-executor",
  "aptos-state-view",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "dashmap",
  "fail 0.5.1",
@@ -1597,15 +1721,15 @@ dependencies = [
 [[package]]
 name = "framework"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-aggregator",
- "aptos-crypto",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-module-verifier",
  "aptos-sdk-builder",
  "aptos-state-view",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "base64",
  "bcs 0.1.3",
  "better_any",
@@ -1737,7 +1861,7 @@ dependencies = [
 [[package]]
 name = "gas-algebra-ext"
 version = "0.0.1"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "move-core-types",
 ]
@@ -3084,11 +3208,11 @@ dependencies = [
 [[package]]
 name = "mvhashmap"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "aptos-aggregator",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bcs 0.1.3",
  "crossbeam",
  "dashmap",
@@ -3396,7 +3520,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 [[package]]
 name = "package-builder"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
  "framework",
@@ -3797,7 +3921,7 @@ dependencies = [
 [[package]]
 name = "proxy"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "ipnet",
 ]
@@ -4263,12 +4387,12 @@ dependencies = [
 [[package]]
 name = "schemadb"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-infallible",
- "aptos-logger",
- "aptos-metrics-core",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "once_cell",
  "rocksdb",
 ]
@@ -4288,12 +4412,12 @@ checksum = "9c8132065adcfd6e02db789d9285a0deb2f3fcb04002865ab67d5fb103533898"
 [[package]]
 name = "scratchpad"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
- "aptos-crypto",
- "aptos-infallible",
- "aptos-metrics-core",
- "aptos-types",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-infallible 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "bitvec",
  "itertools",
  "once_cell",
@@ -4538,7 +4662,7 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 [[package]]
 name = "short-hex-str"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "mirai-annotations",
  "serde 1.0.147",
@@ -4655,15 +4779,15 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "storage-interface"
 version = "0.1.0"
-source = "git+https://github.com/aptos-labs/aptos-core.git?branch=mainnet#cf280b9a9013dddaeda359174b90236b60990533"
+source = "git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork#a1d7446fd24ed9d0c7cb9aa10a741b9224ec6b15"
 dependencies = [
  "anyhow",
- "aptos-crypto",
- "aptos-logger",
- "aptos-metrics-core",
+ "aptos-crypto 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-logger 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
+ "aptos-metrics-core 0.1.0 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-secure-net",
  "aptos-state-view",
- "aptos-types",
+ "aptos-types 0.0.3 (git+https://github.com/hodlen/aptos-core.fork?branch=mainnet-fork)",
  "aptos-vm",
  "bcs 0.1.3",
  "crossbeam-channel",

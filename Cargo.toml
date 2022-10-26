@@ -29,7 +29,7 @@ url = "2.2.2"
 
 aptos-logger = { git="https://github.com/aptos-labs/aptos-core.git", branch="mainnet" }
 aptos-metrics-core = { git="https://github.com/aptos-labs/aptos-core.git", branch="mainnet" }
-aptos-rest-client = { git="https://github.com/aptos-labs/aptos-core.git", branch="mainnet" }
+aptos-rest-client = { git="https://github.com/hodlen/aptos-core.fork", branch="mainnet-fork" }
 aptos-types = { git="https://github.com/aptos-labs/aptos-core.git", branch="mainnet" }
 
 [[bin]]
