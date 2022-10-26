@@ -27,7 +27,7 @@ impl Event {
     pub fn from_event(transaction_hash: String, event: &APIEvent) -> Self {
         Event {
             transaction_hash,
-            key: event.key.to_string(),
+            key: event.guid.account_address.to_string(),
             sequence_number: BigDecimal::from_u64(event.sequence_number.0)
                 .expect("Should be able to convert U64 to big decimal"),
             type_: event.typ.to_string(),
