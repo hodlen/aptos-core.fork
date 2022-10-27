@@ -9,6 +9,7 @@ use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
 use serde_json::Value;
 use std::time::Duration;
+use std::vec;
 use tokio::task::JoinHandle;
 use url::Url;
 
@@ -140,7 +141,15 @@ async fn fetch_nexts(client: RestClient, starting_version: u64) -> Vec<Transacti
                 err
             );
             // If the problem is due to the fullnode, We cannot let indexer crash.
-            if let RestError::Unknown(_) = err {
+            if match err {
+                RestError::Unknown(_) => true,
+                RestError::Api(ref err_resp) if err_resp.status_code == 500 => true,
+                _ => false,
+            } {
+                aptos_logger::warn!(
+                    "Could not handle api internal error {}, will skip this batch",
+                    err
+                );
                 return vec![];
             }
             panic!(
