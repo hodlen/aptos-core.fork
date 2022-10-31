@@ -146,9 +146,11 @@ async fn fetch_nexts(client: RestClient, starting_version: u64) -> Vec<Transacti
                 RestError::Api(ref err_resp) if err_resp.status_code == 500 => true,
                 _ => false,
             } {
-                aptos_logger::warn!(
-                    "Could not handle api internal error {}, will skip this batch",
-                    err
+                aptos_logger::error!(
+                    "Could not handle api internal error {}, will skip batch {}-{}",
+                    err,
+                    starting_version,
+                    starting_version + TRANSACTION_FETCH_BATCH_SIZE as u64
                 );
                 return vec![];
             }
