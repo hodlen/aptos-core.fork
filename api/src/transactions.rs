@@ -137,10 +137,12 @@ pub struct TransactionsApi {
 impl TransactionsApi {
     /// Get transactions
     ///
-    /// Retrieve on-chain committed transactions. The page size and start can be provided to
-    /// get a specific sequence of transactions.
+    /// Retrieve on-chain committed transactions. The page size and start ledger version
+    /// can be provided to get a specific sequence of transactions.
     ///
-    /// If the version has been pruned, then a 410 will be returned
+    /// If the version has been pruned, then a 410 will be returned.
+    ///
+    /// To retrieve a pending transaction, use /transactions/by_hash.
     #[oai(
         path = "/transactions",
         method = "get",
@@ -796,8 +798,8 @@ impl TransactionsApi {
         address: Address,
     ) -> BasicResultWith404<Vec<Transaction>> {
         // Verify the account exists
-        let account = Account::new(self.context.clone(), address, None)?;
-        account.account_state()?;
+        let account = Account::new(self.context.clone(), address, None, None, None)?;
+        account.get_account_resource()?;
 
         let latest_ledger_info = account.latest_ledger_info;
         // TODO: Return more specific errors from within this function.
